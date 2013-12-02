@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="this is the facebook agent for the UDUM project">
+    <meta name="author" content="Fotis Paraskevopoulos">
+
+    <title>Facebook UDUM - Agent</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap-theme.min.css">
+
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+<!-- Wrap all page content here -->
+<div id="wrap">
+
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-default " role="navigation">
+        <div class="container">
+            <a class="navbar-brand" href="#">UDUB-Facebook-Agent</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+
+    <!-- Begin page content -->
+    <div class="container">
+        <h1>{{person.name}} {{person.lastname}}</h1>
+        <div class="row">
+            <div class="xs-md-12">
+                <ul class="list-unstyled">
+                    <li># FbId => <b>{{person.fbid}}</b></li>
+                    <li># Likes => <b>{{person.likes}}</b></li>
+                    <li># Liked => <b>{{person.liked}}</b></li>
+                    <li>Emails=>
+                        <ol>
+                            {%for mail in person.emails %}
+                                <li>{{mail.value}}</li>
+                            {%endfor%}
+                        </ol>
+                    </li>
+                </ul>
+                <h5>Tags</h5>
+                <div style="overflow-y: scroll;height: 300px">
+
+                <table class="table" >
+
+                    {% for token in person.tokens %}
+                        <tr><td>{{token}}</td></tr>
+                    {% endfor %}
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<div id="footer">
+    <div class="container">
+        <p class="text-muted credit">Part of the <b>U</b>biqutous <b>D</b>istributed <b>U</b>ser <b>M</b>odel. Current PhD. work of <a href="http://imu.ntua.gr/users/fotisp">Fotis Paraskevopoulos</a>
+    </div>
+</div>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+</body>
+</html>

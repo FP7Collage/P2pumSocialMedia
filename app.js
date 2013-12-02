@@ -5,71 +5,92 @@
 
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/user')
+    ,facebook=require('./routes/facebook')
+    ,udum=require('./routes/udum')
+    ,fs = require('fs')
   , http = require('http')
+    ,nunjucks=require('nunjucks')
     , passport = require('passport')
     , util = require('util')
-    ,FacebookStrategy = require('passport-facebook').Strategy
     , path = require('path');
 
 
-// Passport session setup.
-//   To support persistent login sessions, Passport needs to be able to
-//   serialize users into and deserialize users out of the session.  Typically,
-//   this will be as simple as storing the user ID when serializing, and finding
-//   the user by ID when deserializing.  However, since this example does not
-//   have a database of user records, the complete Instagram profile is
-//   serialized and deserialized.
-passport.serializeUser(function(user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function(obj, done) {
-    done(null, obj);
-});
-
-
-var RedisStore = require('connect-redis')(express);
-
-var redisOpts ={};
-
-if(process.env['REDIS_URL']){
-
-    console.log("We are on dokku");
-    var url = require('url').parse(process.env['REDIS_URL'])
-    redisOpts ={
-        port: url.port
-        ,host: url.hostname
-    }
-}else{
-    redisOpts = {
-        port:'6379'
-        ,host: 'localhost'
-    }
-}
-
-
 var app = express();
+require('./config/view.js').views(app,nunjucks);
+
+app.facebook_app_id="403359629796497";
+app.facebook_app_secret="58323d83ae0368e261be573c1e245e98";
+
+require('./config/db.js');
+require('./model/Person');
+
+
+var p = require('./config/passport.js');
+p.passport(app,passport,"https://localhost:7000/auth/facebook/callback");
+
+
+var fbcontroller = require('./app/controllers/facebook.js').setup(app);
+var rstore = require('./config/session.js').redis(app);
+
+require('./config/schedule.js').schedule(app,fbcontroller);
+
 
 // all environments
 app.set('port', process.env.PORT || 3002);
-app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(express.methodOverride());
+app.use(express.cookieParser(app.facebook_app_secret) );
+app.use(express.session({secret: app.facebook_app_secret, store:rstore}));
+// use passport session
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+
+
 // development only
 if ('development' == app.get('env')) {
-  app.use(express.errorHandler());
+    app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
-app.get('/users', user.list);
+
+app.get('/', p.ensureAuthenticated("/login"), routes.index);
+app.post('/',p.ensureAuthenticated("/login"),facebook.canvas);
+app.get('/logout', routes.logout);
+app.get('/login',routes.login);
+
+
+app.get('/auth/facebook', passport.authenticate('facebook',{scope: ['email','user_about_me','user_likes','user_notes','user_subscriptions','read_friendlists','read_stream'] }));
+app.get('/auth/facebook/callback',
+    passport.authenticate('facebook', {
+        successRedirect: '/',
+        failureRedirect: '/login' }));
+
+app.get('/udum/social/:id',udum.fetchSocial);
+app.get('/udum/tags/:id',udum.fetchTags);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
+
+
+if ('development' == app.get('env')) {
+
+    https = require('https');
+    https.createServer({
+        key: fs.readFileSync('/private/etc/apache2/ssl/server.key'),
+        cert: fs.readFileSync('/private/etc/apache2/ssl/server.crt')
+    },app).listen(7000,function(){
+            console.log('Express server listening on port 7000 (ssl)')
+        });
+
+
+}
+
+
+
