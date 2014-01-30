@@ -13,7 +13,10 @@ exports.setup=function(app){
         //count the number of likes per object
         async.each(res.data,function(value,done){
             if(value.message){
+                console.log("Adding message to the bucket",likes);
                 string += value.message;
+            }else{
+                console.log("The value does not have a message ",value.message)
             }
 
             fbgraph.get('/fql?q=SELECT object_id, object_type, post_id, user_id FROM like WHERE object_id = '+value.id,function(err,res){
@@ -23,6 +26,9 @@ exports.setup=function(app){
 
             });
         },function(err){
+
+            console.log("Error here",err);
+
             if(res.paging && res.paging.next) {
 
                 console.log('Moving on to the next one '+res.paging.previous);
@@ -49,7 +55,7 @@ exports.setup=function(app){
                         return done();
                     }
 
-                    if(value.lastUpdated == undefined || (new Date() - value.lastUpdated > (15*60*1000))){
+                    if(value.lastUpdated == undefined || (new Date() - value.lastUpdated > (1*60*1000))){
 
                         fbgraph.setAccessToken(value.accesstoken);
 
@@ -64,6 +70,7 @@ exports.setup=function(app){
                             fbgraph.get(value.fbid+'/statuses',function(err,res){
                                 if(!err){
                                     handleComments(res,'',0,function(string,liked){
+                                        console.log("Tokenizing",string);
                                         var tokenized=tokenizer.tokenize(string);
                                         value.tokens=tokenized;
                                         value.lastUpdated = new Date();
@@ -80,7 +87,7 @@ exports.setup=function(app){
                             });
                         });
                     }else{
-                        console.log(value.fbid+" updated withing 1 minute igoring");
+                        console.log(value.fbid+" updated withing "+(1)+" minute igoring",value.lastUpdated);
                         done();
                     }
 
