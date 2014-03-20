@@ -3,6 +3,13 @@ exports.templates=function(){
 
     return {
 
+        status:{
+            determine:function(id,done){
+                Person.findByFBID(id,function(person){
+                    done({connected:person?true:false})
+                });
+            }
+        },
         social:{
             translate:function(id,done){
 

@@ -30,7 +30,10 @@ p.passport(app,passport,"https://localhost:7000/auth/facebook/callback");
 
 
 var fbcontroller = require('./app/controllers/facebook.js').setup(app);
-var rstore = require('./config/session.js').redis(app);
+
+
+var MongoStore = require('connect-mongo')(express);
+
 
 require('./config/schedule.js').schedule(app,fbcontroller);
 
@@ -42,7 +45,15 @@ app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser(app.facebook_app_secret) );
-app.use(express.session({secret: app.facebook_app_secret, store:rstore}));
+app.use(express.session(
+    {   secret: app.facebook_app_secret,
+        store: new MongoStore({
+            db: "udumfacebook"
+        })
+    })
+);
+
+
 // use passport session
 app.use(passport.initialize());
 app.use(passport.session());
@@ -70,8 +81,11 @@ app.get('/auth/facebook/callback',
         successRedirect: '/',
         failureRedirect: '/login' }));
 
+
+app.get('/udum/status/:id',udum.fetchStatus);
 app.get('/udum/social/:id',udum.fetchSocial);
 app.get('/udum/tags/:id',udum.fetchTags);
+
 
 
 http.createServer(app).listen(app.get('port'), function(){

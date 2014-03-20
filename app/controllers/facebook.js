@@ -62,6 +62,10 @@ exports.setup=function(app){
                         fbgraph.get('/fql?q=select object_id from like WHERE user_id='+value.fbid,function(err,res){
 
 
+                            if(err){
+                                console.log("Couldn't fetch information returning")
+                                return done();
+                            }
 
                             value.likes= res.data.length;
 
