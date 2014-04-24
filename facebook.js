@@ -16,6 +16,14 @@ var express = require('express')
 
 
 var app = express();
+
+var env= {
+    callback: process.env["p2p_facebook_callback"] ? process.env["p2p_facebook_callback"] : "https://localhost:7000/auth/facebook/callback"
+};
+
+console.log(env);
+app.locals(env);
+
 require('./config/view.js').views(app,nunjucks);
 
 app.facebook_app_id="403359629796497";
@@ -26,7 +34,7 @@ require('./model/Person');
 
 
 var p = require('./config/passport.js');
-p.passport(app,passport,"https://localhost:7000/auth/facebook/callback");
+p.passport(app,passport,env.callback);
 
 
 var fbcontroller = require('./app/controllers/facebook.js').setup(app);
@@ -48,7 +56,7 @@ app.use(express.cookieParser(app.facebook_app_secret) );
 app.use(express.session(
     {   secret: app.facebook_app_secret,
         store: new MongoStore({
-            db: "udumfacebook"
+            db: "p2pum-facebook"
         })
     })
 );
@@ -99,7 +107,7 @@ if ('development' == app.get('env')) {
     https.createServer({
         key: fs.readFileSync('/private/etc/apache2/ssl/server.key'),
         cert: fs.readFileSync('/private/etc/apache2/ssl/server.crt')
-    },app).listen(7000,function(){
+    },app).listen(7002,function(){
             console.log('Express server listening on port 7000 (ssl)')
         });
 
