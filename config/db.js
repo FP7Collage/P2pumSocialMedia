@@ -1,12 +1,12 @@
 mongoose = require('mongoose');
-if(process.env.NODE_ENV=='production' || process.env.NODE_ENV=='test'){
-    mongoose.connect('mongodb://admin:peekadmin@paulo.mongohq.com:10091/peekintoo');
-}else{
-    mongoose.connect('mongodb://localhost/p2pum-facebook');
-}
-db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function callback () {
-    console.log("Mongoose open");
 
+var url = process.env['MONGO_URL'] ? process.env['MONGO_URL'] :  'mongodb://localhost/p2pum-facebook';
+
+console.log("Connecting to ",url);
+mongoose.connect(url);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+    console.log("Mongoose open");
 });
+

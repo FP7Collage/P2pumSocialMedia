@@ -1,3 +1,7 @@
 .idea
 *.iml
 node_modules
+deployment
+config/constants.js
+ENV
+Procfile

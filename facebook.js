@@ -26,11 +26,15 @@ app.locals(env);
 
 require('./config/view.js').views(app,nunjucks);
 
-app.facebook_app_id="403359629796497";
-app.facebook_app_secret="58323d83ae0368e261be573c1e245e98";
+
 
 require('./config/db.js');
 require('./model/Person');
+var _constants = require('./config/constants');
+
+app.facebook_app_id=_constants.facebook.app_id;
+app.facebook_app_secret=constants.facebook.app_secret;
+
 
 
 var p = require('./config/passport.js');
@@ -113,6 +117,3 @@ if ('development' == app.get('env')) {
 
 
 }
-
-
-
